@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite name="interview-test" verbose="1" data-provider-thread-count="5" parallel="classes" preserve-order="true" skipfailedinvocationcounts="true">
+<!--    <test name="regression" time-out="50000" enabled="true" thread-count="5" verbose="true">-->
+<!--        <classes>-->
+<!--            <class name="interviews.InterviewTest"/>-->
+<!--        </classes>-->
+<!--    </test>-->
+    <groups>
+        <run>
+            <include name="smoke">smoke</include>
+            <exclude name="regression">smoke</exclude>
+        </run>
+    </groups>
+</suite>
+<!-- mvn test -Dgroups="interview" -->

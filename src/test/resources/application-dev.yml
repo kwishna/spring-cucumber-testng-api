@@ -1,0 +1,7 @@
+host: https://google.com
+environment: dev
+downloadPath: C:\Downloads
+workEmail: hello@example.com
+screenshot: off
+browser: CHROME
+
