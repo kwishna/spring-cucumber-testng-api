@@ -4,4 +4,5 @@ downloadPath: C:\Downloads
 workEmail: hello@example.com
 screenshot: off
 browser: CHROME
-
+default:
+  timeout: 10

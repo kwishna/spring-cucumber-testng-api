@@ -10,7 +10,7 @@ import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 
 import java.util.List;
 
-public class SampleExtent {
+public class ExtentReporting {
     private static final ThreadLocal<ExtentReports> extent = new ThreadLocal<>();
     private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
 

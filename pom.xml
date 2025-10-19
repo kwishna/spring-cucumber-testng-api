@@ -289,9 +289,9 @@
                         <cucumber.execution.parallel.config.strategy>fixed</cucumber.execution.parallel.config.strategy>
                         <cucumber.execution.parallel.config.fixed.parallelism>${parallel.tests}
                         </cucumber.execution.parallel.config.fixed.parallelism>
-                        <cucumber.plugin>json:target/cucumber.json,html:target/cucumber-html-reports</cucumber.plugin>
-                        <cucumber.glue>org.spring.bdd.configs,org.spring.bdd.hooks,org.spring.bdd.stepDefs</cucumber.glue>
-                        <cucumber.features>src/test/resources/features</cucumber.features>
+<!--                        <cucumber.plugin>json:target/cucumber.json,html:target/cucumber-html-reports</cucumber.plugin>-->
+<!--                        <cucumber.glue>org.spring.bdd.configs,org.spring.bdd.hooks,org.spring.bdd.stepDefs</cucumber.glue>-->
+<!--                        <cucumber.features>src/test/resources/features</cucumber.features>-->
                         <cucumber.snippetType>camelcase</cucumber.snippetType>
                         <cucumber.strict>true</cucumber.strict>
                         <cucumber.monochrome>true</cucumber.monochrome>
@@ -332,7 +332,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <skip>true</skip>
+<!--                            <skip>true</skip>-->
                             <projectName>Spring BDD</projectName>
                             <outputDirectory>${project.build.directory}/cucumber-reports</outputDirectory>
                             <inputDirectory>${project.build.directory}</inputDirectory>

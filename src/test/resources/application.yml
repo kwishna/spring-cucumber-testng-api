@@ -1,3 +1,5 @@
 spring:
   profiles:
     active: ${ENVIRONMENT:dev}
+default:
+  timeout: 10

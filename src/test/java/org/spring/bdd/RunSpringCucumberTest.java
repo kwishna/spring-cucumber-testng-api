@@ -1,4 +1,4 @@
-package org.spring.bdd.configs;
+package org.spring.bdd;
 
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
@@ -6,6 +6,8 @@ import io.cucumber.testng.FeatureWrapper;
 import io.cucumber.testng.PickleWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spring.bdd.extent.ExtentReporting;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 
 import java.util.List;
@@ -17,7 +19,7 @@ import java.util.List;
                 "json:target/cucumber.json",
                 "junit:target/junit.xml",
                 "html:target/cucumber-html",
-//                "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:",
+                "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:",
                 "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm"
         },
         glue = {
@@ -30,10 +32,10 @@ public class RunSpringCucumberTest extends AbstractTestNGCucumberTests {
 
     Logger log = LogManager.getLogger();
 
-//    @BeforeSuite
-//    public void setUp() {
-//        SampleExtent.initExtent();
-//    }
+    @BeforeSuite
+    public void setUp() {
+        ExtentReporting.initExtent();
+    }
 
     @Override
     @DataProvider(parallel = true)

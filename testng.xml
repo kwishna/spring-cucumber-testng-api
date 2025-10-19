@@ -3,7 +3,7 @@
 <suite name="spring-bdd" verbose="1" data-provider-thread-count="5" parallel="classes" preserve-order="true" skipfailedinvocationcounts="true">
     <test name="Account Features">
         <classes>
-            <class name="org.spring.bdd.configs.RunSpringCucumberTest"/>
+            <class name="org.spring.bdd.RunSpringCucumberTest"/>
         </classes>
     </test>
 </suite>

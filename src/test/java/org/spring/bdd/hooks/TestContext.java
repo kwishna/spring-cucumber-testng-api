@@ -1,4 +1,4 @@
-package org.spring.bdd.configs;
+package org.spring.bdd.hooks;
 
 import org.springframework.stereotype.Component;
 import java.util.HashMap;

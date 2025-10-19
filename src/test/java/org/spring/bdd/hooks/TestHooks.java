@@ -8,7 +8,7 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.spring.bdd.envs.WebDriverManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.spring.bdd.extent.SampleExtent;
+import org.spring.bdd.extent.ExtentReporting;
 
 import java.io.ByteArrayInputStream;
 
@@ -20,19 +20,19 @@ public class TestHooks {
     @Before(order = 1)
     public void beforeScenario(Scenario scenario) {
         System.out.println("Starting scenario: " + scenario.getName());
-        SampleExtent.startTest(scenario.getName());
-        SampleExtent.addInfo("Scenario Name: " + scenario.getName());
+        ExtentReporting.startTest(scenario.getName());
+        ExtentReporting.addInfo("Scenario Name: " + scenario.getName());
     }
 
     @After(order = 1)
     public void afterScenario(Scenario scenario) {
         if (scenario.isFailed()) {
             takeScreenshot(scenario);
-            SampleExtent.addFail("Scenario failed: " + scenario.getName());
+            ExtentReporting.addFail("Scenario failed: " + scenario.getName());
         } else {
-            SampleExtent.addPass("Scenario passed: " + scenario.getName());
+            ExtentReporting.addPass("Scenario passed: " + scenario.getName());
         }
-        SampleExtent.endTest();
+        ExtentReporting.endTest();
     }
 
     private void takeScreenshot(Scenario scenario) {
@@ -51,6 +51,6 @@ public class TestHooks {
     @After(order = 2)
     public void tearDown() {
         webDriverManager.quitDriver();
-        SampleExtent.flush();
+        ExtentReporting.flush();
     }
 }
