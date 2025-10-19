@@ -22,7 +22,7 @@ public class DriverFactory {
 
             System.setProperty("webdriver.chrome.driver", driverPath);
             ChromeOptions ops = new ChromeOptions();
-            ops.addArguments("--headless");
+//            ops.addArguments("--headless");
             ops.addArguments("window-size=1920,1080");
             ops.addArguments("--remote-allow-origin=*");
             ops.addArguments("--window-position=-1,-1");
