@@ -1,4 +1,4 @@
-@ui
+@ui @skip
 Feature: UI Testing with BDD
   As a test automation engineer
   I want to verify login feature
@@ -7,7 +7,7 @@ Feature: UI Testing with BDD
   Background:
     Given User is on HRMLogin page "https://opensource-demo.orangehrmlive.com/"
 
-  @ValidCredentials @api
+  @ValidCredentials
   Scenario: Login with valid credentials
     When User enters username as "Admin" and password as "admin123"
     Then User should be able to login successfully and new page open

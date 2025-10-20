@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @Scope("cucumber-glue") // 1. CRITICAL: This makes the class and its state scenario-scoped.
 public abstract class BaseSteps {
 
-    Logger log = LogManager.getLogger(this);
+    private static final Logger log = LogManager.getLogger(BaseSteps.class);
 
     @Value("environment")
     protected String environment;

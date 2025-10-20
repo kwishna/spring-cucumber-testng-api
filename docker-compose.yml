@@ -1,0 +1,140 @@
+version: '3.8'
+
+services:
+  # ==================================================
+  # Selenium Grid Hub
+  # ==================================================
+  selenium-hub:
+    image: selenium/hub:4.16.1
+    container_name: selenium-hub
+    ports:
+      - "4444:4444"   # Hub Web UI and API
+      - "4442:4442"   # Event Bus publish port
+      - "4443:4443"   # Event Bus subscribe port
+    environment:
+      - SE_SESSION_REQUEST_TIMEOUT=300
+      - SE_SESSION_RETRY_INTERVAL=5
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_SESSION_TIMEOUT=300
+      - GRID_MAX_SESSION=10
+      - GRID_BROWSER_TIMEOUT=300
+      - GRID_TIMEOUT=300
+    networks:
+      - selenium-grid
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================================================
+  # Chrome Node
+  # ==================================================
+  chrome:
+    image: selenium/node-chrome:4.16.1
+    container_name: selenium-chrome
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+    shm_size: '2gb'
+    ports:
+      - "5900:5900"   # VNC port
+      - "7900:7900"   # noVNC (browser-based VNC)
+    networks:
+      - selenium-grid
+    volumes:
+      - /dev/shm:/dev/shm
+
+  # ==================================================
+  # Firefox Node
+  # ==================================================
+  firefox:
+    image: selenium/node-firefox:4.16.1
+    container_name: selenium-firefox
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+    shm_size: '2gb'
+    ports:
+      - "5901:5900"   # VNC port
+      - "7901:7900"   # noVNC
+    networks:
+      - selenium-grid
+    volumes:
+      - /dev/shm:/dev/shm
+
+  # ==================================================
+  # Edge Node
+  # ==================================================
+  edge:
+    image: selenium/node-edge:4.16.1
+    container_name: selenium-edge
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+    shm_size: '2gb'
+    ports:
+      - "5902:5900"   # VNC port
+      - "7902:7900"   # noVNC
+    networks:
+      - selenium-grid
+    volumes:
+      - /dev/shm:/dev/shm
+
+  # ==================================================
+  # Test Application Container (Optional)
+  # ==================================================
+  test-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-cucumber-tests
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - REMOTE_EXECUTION=true
+      - REMOTE_URL=http://selenium-hub:4444/wd/hub
+      - BROWSER=chrome
+      - HEADLESS=false
+      - SPRING_PROFILES_ACTIVE=grid
+    networks:
+      - selenium-grid
+    volumes:
+      - ./build:/app/build
+      - ./ExtentReports:/app/ExtentReports
+      - ./logs:/app/logs
+    profiles:
+      - with-tests   # Only starts when explicitly requested
+
+networks:
+  selenium-grid:
+    driver: bridge
+    name: selenium-grid-network

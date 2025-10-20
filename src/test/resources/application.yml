@@ -1,5 +1,73 @@
 spring:
   profiles:
     active: ${ENVIRONMENT:dev}
+
+api:
+  base:
+    url: ${API_BASE_URL:hhtps://jsonplaceholder.typicode.com}
+  timeout: ${API_TIMEOUT:30}
+  log:
+    requests: ${API_LOG_REQUESTS:true}
+    responses: ${API_LOG_RESPONSES:true}
+
+appium:
+  server:
+    url: ${APPIUM_SERVER_URL:http://localhost:4723}
+  implicit:
+    wait: ${APPIUM_IMPLICIT_WAIT:10}
+  explicit:
+    wait: ${APPIUM_EXPLICIT_WAIT:10}
+  screenshot:
+    dir: ${APPIUM_SCREENSHOT_DIR:./screenshots}
+
+selenium:
+  implicit:
+    wait: ${SEL_IMPLICIT_WAIT:10}
+  explicit:
+    wait: ${SEL_IMPLICIT_WAIT:10}
+  screenshot:
+    dir: ${SEL_SCREENSHOT_DIR:./screenshots}
+  download:
+    dir: ${SEL_SCREENSHOT_DIR:./download}
+
+playwright:
+  headless: ${PLAYWRIGHT_HEADLESS:true}
+  slow:
+    mo: ${PLAYWRIGHT_SLO_MO:0}
+  timeout: ${PLAYWRIGHT_TIMEOUT:30000}
+  screenshot:
+    dir: ${PLAYWRIGHT_SCREENSHOT_DIR:./screenshots}
+  video:
+    dir: ${PLAYWRIGHT_VIDEO_DIR:./video}
+  trace:
+    dir: ${PLAYWRIGHT_TRACE_DIR:./traces}
+
+browser: ${BROWSER:chrome}
+headless: ${HEADLESS:false}
+
+remote:
+  execution: false
+  url: https;//localhost:4444/wd/hub
+  platform: ANY
+  browser:
+    version: 141.0.1239.3
+
+grid:
+  node:
+    timeout: ${GRID_NODE_TIMEOUT:300}
+  session:
+    timeout: ${GRID_SESSION_TIMEOUT:300}
+
+window:
+  width: ${WINDOW_WIDTH:1920}
+  height: ${WINDOW_HEIGHT:1080}
+
+implicit:
+  wait: ${IMPLICIT_TIMEOUT:10}
+
+page:
+  load:
+    timeout: ${PAGE_LOAD_TIMEOUT:30}
+
 default:
   timeout: 10

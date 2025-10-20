@@ -3,6 +3,37 @@ environment: dev
 downloadPath: C:\Downloads
 workEmail: hello@example.com
 screenshot: off
-browser: CHROME
+
+browser: chrome
+headless: false
+
+remote:
+  execution: false
+  url: https;//localhost:4444/wd/hub
+  platform: ANY
+  browser:
+    version: 141.0.1239.3
+
+grid:
+  node:
+    timeout: 300
+  session:
+    timeout: 300
+
+window:
+  width: 1920
+  height: 1080
+
+implicit:
+  wait: 10
+
+page:
+  load:
+    timeout: 30
+
 default:
   timeout: 10
+
+spring:
+  profiles:
+    active: ${ENVIRONMENT:dev}

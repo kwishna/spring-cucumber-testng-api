@@ -1,0 +1,121 @@
+version: '3.8'
+
+# ==================================================
+# Selenium Grid with Video Recording Support
+# Records test execution videos for debugging
+# ==================================================
+
+services:
+  selenium-hub:
+    image: selenium/hub:4.16.1
+    container_name: selenium-hub-video
+    ports:
+      - "4444:4444"
+      - "4442:4442"
+      - "4443:4443"
+    environment:
+      - SE_SESSION_REQUEST_TIMEOUT=300
+      - SE_NODE_MAX_SESSIONS=5
+    networks:
+      - selenium-grid
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  chrome-video:
+    image: selenium/node-chrome:4.16.1
+    container_name: selenium-chrome-video
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+    shm_size: '2gb'
+    ports:
+      - "5900:5900"
+      - "7900:7900"
+    networks:
+      - selenium-grid
+    volumes:
+      - /dev/shm:/dev/shm
+
+  chrome-video-recorder:
+    image: selenium/video:ffmpeg-6.1-20231219
+    container_name: chrome-video-recorder
+    depends_on:
+      - chrome-video
+    environment:
+      - DISPLAY_CONTAINER_NAME=chrome-video
+      - FILE_NAME=chrome_video.mp4
+      - SE_VIDEO_FILE_NAME=auto
+      - SE_VIDEO_FOLDER=/videos
+    volumes:
+      - ./videos:/videos
+    networks:
+      - selenium-grid
+
+  firefox-video:
+    image: selenium/node-firefox:4.16.1
+    container_name: selenium-firefox-video
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+    shm_size: '2gb'
+    ports:
+      - "5901:5900"
+      - "7901:7900"
+    networks:
+      - selenium-grid
+    volumes:
+      - /dev/shm:/dev/shm
+
+  firefox-video-recorder:
+    image: selenium/video:ffmpeg-6.1-20231219
+    container_name: firefox-video-recorder
+    depends_on:
+      - firefox-video
+    environment:
+      - DISPLAY_CONTAINER_NAME=firefox-video
+      - FILE_NAME=firefox_video.mp4
+      - SE_VIDEO_FILE_NAME=auto
+      - SE_VIDEO_FOLDER=/videos
+    volumes:
+      - ./videos:/videos
+    networks:
+      - selenium-grid
+
+networks:
+  selenium-grid:
+    driver: bridge
+    name: selenium-grid-network
+
+# ==================================================
+# Usage:
+# ==================================================
+# Start Grid with video recording:
+# docker-compose -f docker-compose.video.yml up -d
+#
+# Videos will be saved to ./videos directory
+#
+# Run tests:
+# gradle test -Dremote.execution=true
+#
+# Stop and cleanup:
+# docker-compose -f docker-compose.video.yml down
+# ==================================================

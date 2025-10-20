@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class EnvManager {
     static Logger log = LogManager.getLogger();
@@ -28,5 +30,10 @@ public class EnvManager {
 
     public String getBaseUrl() {
         return env.getProperty("baseUrl");
+    }
+
+    public String getApiBaseUrl() {
+        return Optional.ofNullable(System.getenv("API_BASE_URL"))
+                .orElseGet(() -> env.getProperty("api.base.url", "https://api.example.com"));
     }
 }

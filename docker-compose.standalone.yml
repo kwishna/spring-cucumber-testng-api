@@ -1,0 +1,51 @@
+version: '3.8'
+
+# ==================================================
+# Standalone Selenium Grid Configuration
+# Single container with all browsers
+# Lighter than full grid, good for local development
+# ==================================================
+
+services:
+  selenium-standalone:
+    image: selenium/standalone-chrome:4.16.1
+    container_name: selenium-standalone
+    ports:
+      - "4444:4444"
+      - "5900:5900"      # VNC
+      - "7900:7900"      # noVNC (browser access)
+    shm_size: '2gb'
+    environment:
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+      - SE_OPTS=--log-level INFO
+    volumes:
+      - /dev/shm:/dev/shm
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# ==================================================
+# Usage:
+# ==================================================
+# Start standalone Grid:
+#   docker-compose -f docker-compose.standalone.yml up -d
+#
+# View Grid Console:
+#   http://localhost:4444
+#
+# View running tests (noVNC):
+#   http://localhost:7900 (password: secret)
+#
+# Run tests against it:
+#   gradle test -Dremote.execution=true -Dremote.url=http://localhost:4444/wd/hub
+#
+# Stop:
+#   docker-compose -f docker-compose.standalone.yml down
+# ==================================================
+

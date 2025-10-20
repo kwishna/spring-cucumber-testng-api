@@ -6,6 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class BaseUiSteps extends BaseSteps {
 
+    /*
+    @Autowired WebDriver driver --> WebDriverConfig creates @Bean --> DriverFactory creates instance -> Spring manages lifecycle.
+     */
+
     @Autowired
     protected WebDriver driver;
 

@@ -3,6 +3,7 @@ package org.spring.bdd.stepDefs;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.restassured.response.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,13 +17,13 @@ public class UserApiSteps extends BaseApiSteps {
     @Given("the API base URL is {string}")
     public void setBaseURL(String url) {
         log.info("--- Setting base URL to: {} ---", url);
-        this.baseURL = url;
+        this.baseUrl = url;
     }
 
     @When("I send a GET request to {string}")
     public void sendGetRequest(String endpoint) {
-        log.info("--- Sending GET request to: {}{} ---", baseURL, endpoint);
-        response = given().baseUri(baseURL).get(endpoint);
+        log.info("--- Sending GET request to: {}{} ---", baseUrl, endpoint);
+        Response res = given().relaxedHTTPSValidation().baseUri(baseUrl).get(endpoint);
     }
 
     @Then("the response status code should be {int}")

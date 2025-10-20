@@ -31,4 +31,11 @@ public class WebDriverManager {
             driverThread.remove();
         }
     }
+
+    public void quitAllDrivers() {
+        if (driverThread.get() != null) {
+            driverThread.get().quit();
+            driverThread.remove();
+        }
+    }
 }

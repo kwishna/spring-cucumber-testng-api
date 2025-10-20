@@ -18,7 +18,7 @@ import java.util.List;
                 "pretty",
                 "json:build/cucumber.json",
                 "junit:build/junit.xml",
-                "html:build/cucumber-html",
+                "html:build/cucumber.html",
                 "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:",
                 "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm"
         },

@@ -26,6 +26,8 @@ ext {
     testngVersion = '7.11.0'
     restAssuredVersion = '5.5.6'
     seleniumVersion = '4.36.0'
+    appiumVersion = '10.0.0'
+    playwrightVersion = '1.56.0'
     cucumberVersion = '7.30.0'
     allureVersion = '2.24.0'
     wiremockVersion = '3.13.1'
@@ -58,6 +60,9 @@ dependencies {
     implementation "org.seleniumhq.selenium:selenium-java:${seleniumVersion}"
     implementation 'org.seleniumhq.selenium:selenium-devtools-v126:4.24.0'
     implementation 'io.github.bonigarcia:webdrivermanager:6.3.2'
+
+    implementation "com.microsoft.playwright:playwright:${playwrightVersion}"
+    implementation "io.appium:java-client:${appiumVersion}"
 
     // BDD Cucumber
     implementation 'io.cucumber:cucumber-java'
@@ -110,19 +115,10 @@ allure {
 
 // Cucumber Reporting configuration
 cucumberReports {
-    outputDir = file('build/reports/cucumber')
-    buildId = '0'
-    reports = files('build/cucumber.json')
+    outputDir = file("${buildDir}/cucumber-reports")
+    buildId = '1'
+    reports = files("${buildDir}/cucumber.json")
 }
-
-// Configure the plugin
-//cucumberReports {
-//    jsonReportDirectory = file('build/cucumber-reports') // Directory where Cucumber JSON reports are generated
-//    outputDirectory = file('build/reports/cucumber-html') // Directory for the generated HTML reports
-//    buildNumber = '1.0.0' // Optional: Build number for the report
-//    projectName = 'My Cucumber Project' // Optional: Project name for the report
-//    // Add more configuration options as needed
-//}
 
 // Clean task extension
 clean.doFirst {
@@ -153,6 +149,21 @@ test {
 
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
 
+    // Configure test logging
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        exceptionFormat "full"
+        showStandardStreams = true
+        showExceptions true
+        showCauses true
+        showStackTraces true
+    }
+
+    // AspectJ weaver for Allure reporting
+    doFirst {
+        jvmArgs = ["-javaagent:${configurations.aspectjWeaver.singleFile}"]
+    }
+
     // Load properties file
     systemProperties(System.getProperties())
     systemProperties['property.file'] = "$projectDir/src/test/resources/config.properties"
@@ -170,16 +181,19 @@ sourceSets {
 
 configurations {
     // Create a resolvable configuration for aspectjweaver
-//    aspectjWeaver
+    aspectjWeaver
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+dependencies {
+    aspectjWeaver "org.aspectj:aspectjweaver:${aspectjVersion}"
 }
 
 // Integration Test task
 task integrationTest(type: Test) {
     description = 'Runs integration tests (similar to Maven Failsafe)'
     group = 'verification'
-
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
 
@@ -199,11 +213,10 @@ task integrationTest(type: Test) {
             "property.file": "$projectDir/src/test/resources/config.properties"
     ]
 
-    // AspectJ weaver for Allure in integration tests
-//    jvmArgs = [
-//            "-javaagent:${configurations.testImplementation.find { it.name.contains('aspectjweaver') }}"
-//            "-javaagent:${configurations.aspectjWeaver.singleFile}"
-//    ]
+    // AspectJ weaver for Allure reporting
+    doFirst {
+        jvmArgs = ["-javaagent:${configurations.aspectjWeaver.singleFile}"]
+    }
 
     shouldRunAfter test
 }
@@ -218,8 +231,13 @@ task cucumberTests(type: Test) {
     systemProperties = test.systemProperties + [
             "cucumber.plugin": "json:build/cucumber.json,html:build/cucumber-html-reports",
             "cucumber.glue": "org.spring.bdd.configs,org.spring.bdd.hooks,org.spring.bdd.stepDefs",
-//            "cucumber.features": "src/test/resources/features"
+            // "cucumber.features": "src/test/resources/features"
     ]
+
+    // AspectJ weaver for Allure reporting
+    doFirst {
+        jvmArgs = ["-javaagent:${configurations.aspectjWeaver.singleFile}"]
+    }
 }
 
 task cucumberSmokeTests(type: Test) {
@@ -227,7 +245,13 @@ task cucumberSmokeTests(type: Test) {
         useDefaultListeners = true
         suites 'testng-smoke.xml'
     }
+
     systemProperty "cucumber.filter.tags", "@smoke"
+
+    // AspectJ weaver for Allure reporting
+    doFirst {
+        jvmArgs = ["-javaagent:${configurations.aspectjWeaver.singleFile}"]
+    }
 }
 
 task cucumberRegressionTests(type: Test) {
@@ -242,6 +266,11 @@ task cucumberRegressionTests(type: Test) {
             "cucumber.execution.parallel.config.strategy": "fixed",
             "cucumber.execution.parallel.config.fixed.parallelism": "6"
     ]
+
+    // AspectJ weaver for Allure reporting
+    doFirst {
+        jvmArgs = ["-javaagent:${configurations.aspectjWeaver.singleFile}"]
+    }
 }
 
 // Task to generate Allure report
@@ -249,6 +278,18 @@ task allureReporting(type: Exec) {
     description = 'Generate Allure report'
     group = 'reporting'
     commandLine 'allure', 'generate', 'build/allure-results', '-o', 'build/reports/allure-report'
+    ignoreExitValue = true
+    onlyIf {
+        def result = false
+        try {
+            def proc = "which allure".execute()
+            proc.waitFor()
+            result = proc.exitValue() == 0 && file('build/allure-results').exists()
+        } catch (Exception e) {
+            result = false
+        }
+        return result
+    }
 }
 
 // Task to serve Allure report
@@ -256,6 +297,18 @@ task allureServing(type: Exec) {
     description = 'Serve Allure report'
     group = 'reporting'
     commandLine 'allure', 'serve', 'build/allure-results'
+    ignoreExitValue = true
+    onlyIf {
+        def result = false
+        try {
+            def proc = "which allure".execute()
+            proc.waitFor()
+            result = proc.exitValue() == 0 && file('build/allure-results').exists()
+        } catch (Exception e) {
+            result = false
+        }
+        return result
+    }
 }
 
 // Task to generate Cucumber reports
@@ -293,18 +346,9 @@ publishing {
 tasks.withType(Test).configureEach {
     systemProperty "database.url", System.getProperty("database.url", "jdbc:mysql://prod_url:3306/devdb")
 
-    // Apply profile-specific cucumber tags
-    def profile = System.getProperty("profile", "dev")
-    switch(profile) {
-        case "dev":
-            systemProperty "cucumber.filter.tags", System.getProperty("cucumber.filter.tags", "@smoke")
-            break
-        case "stg":
-            systemProperty "cucumber.filter.tags", System.getProperty("cucumber.filter.tags", "@smoke")
-            break
-        case "prod":
-            systemProperty "cucumber.filter.tags", System.getProperty("cucumber.filter.tags", "@prod")
-            break
+    // Apply profile-specific cucumber tags only if explicitly set
+    if (System.getProperty("cucumber.filter.tags")) {
+        systemProperty "cucumber.filter.tags", System.getProperty("cucumber.filter.tags")
     }
 }
 
@@ -336,6 +380,7 @@ afterEvaluate {
     if (tasks.findByName('generateCucumberReports')) {
         tasks.named('generateCucumberReports') {
             dependsOn test
+            onlyIf { file("${buildDir}/cucumber.json").exists() }
         }
         // Configure genCucumberReports to depend on generateCucumberReports
         tasks.named('genCucumberReports') {
