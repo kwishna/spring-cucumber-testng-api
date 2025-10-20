@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope("cucumber-glue")
-public abstract class BaseApiSteps {
+public abstract class BaseApiSteps extends BaseSteps{
     protected Response response;
     protected String baseURL;
 }

@@ -1,5 +1,6 @@
 package org.spring.bdd.hooks;
 
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,7 @@ import java.util.Objects;
  * often superseded by Spring's "cucumber-glue" scope in pure Cucumber-Spring projects.
  */
 @Component // Make it a singleton bean, managed by Spring
+@Scope("cucumber-glue")
 public class TestContext {
 
     // The core of the implementation: A ThreadLocal that holds a Map.

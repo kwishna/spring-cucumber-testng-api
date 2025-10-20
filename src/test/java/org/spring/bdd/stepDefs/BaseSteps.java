@@ -2,15 +2,11 @@ package org.spring.bdd.stepDefs;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.openqa.selenium.WebDriver;
+import org.spring.bdd.hooks.TestContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A base class for all step definition classes.
@@ -32,6 +28,5 @@ public abstract class BaseSteps {
     protected String environment;
 
     @Autowired
-    ThreadContext ctx;
-
+    TestContext testContext;
 }

@@ -5,8 +5,13 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spring.bdd.pages.LoginPage;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class LoginUiSteps extends BaseUiSteps {
+
+    @Autowired
+    LoginPage loginPage;
 
     private static final Logger log = LogManager.getLogger(LoginUiSteps.class);
 

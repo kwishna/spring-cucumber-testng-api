@@ -16,9 +16,9 @@ import java.util.List;
         features = "src/test/resources/features",
         plugin = {
                 "pretty",
-                "json:target/cucumber.json",
-                "junit:target/junit.xml",
-                "html:target/cucumber-html",
+                "json:build/cucumber.json",
+                "junit:build/junit.xml",
+                "html:build/cucumber-html",
                 "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:",
                 "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm"
         },
