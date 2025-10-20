@@ -2,52 +2,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'io.qameta.allure' version '3.0.0'
-//    id "com.github.spacialcircumstances.gradle-cucumber-reporting" version "0.1.25"
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    testImplementation 'org.testng:testng:7.11.0'
-    implementation 'io.github.cdimascio:dotenv-java:3.2.0'
-    implementation 'commons-io:commons-io:2.20.0'
-    implementation 'org.awaitility:awaitility:4.3.0'
-    implementation 'org.projectlombok:lombok:1.18.42'
-
-    // API Testing
-    testImplementation 'io.rest-assured:rest-assured:5.5.6'
-    implementation 'io.rest-assured:json-schema-validator:5.5.6'
-
-    // Web Automation
-    implementation 'org.seleniumhq.selenium:selenium-java:4.36.0'
-    implementation 'org.seleniumhq.selenium:selenium-devtools-v126:4.24.0'
-    implementation 'io.github.bonigarcia:webdrivermanager:6.3.2'
-
-    // BDD Cucumber
-    implementation 'io.cucumber:cucumber-java:7.30.0'
-    implementation 'io.cucumber:cucumber-testng:7.30.0'
-    implementation 'io.cucumber:cucumber-spring:7.30.0'
-
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:4.0.0-M3'
-
-    // Reporting & Utilities
-    implementation 'tools.jackson.core:jackson-core:3.0.0'
-    implementation 'tools.jackson.core:jackson-databind:3.0.0'
-    testImplementation 'org.apache.poi:poi:5.2.4'
-    testImplementation 'org.apache.poi:poi-ooxml:5.2.4'
-
-    implementation "org.wiremock:wiremock:3.13.1"
-    testImplementation "org.mockito:mockito-core:5.+"
-
-    /// Import allure-bom to ensure correct versions of all the dependencies are used
-    testImplementation platform("io.qameta.allure:allure-bom:2.24.0")
-    // Add necessary Allure dependencies to dependencies section
-    testImplementation "io.qameta.allure:allure-cucumber7-jvm"
-    testImplementation "io.qameta.allure:allure-testng"
-
-    implementation 'tech.grasshopper:extentreports-cucumber7-adapter:1.14.0'
+    id 'com.github.spacialcircumstances.gradle-cucumber-reporting' version '0.1.25'
 }
 
 group = 'org.spring.bdd'
@@ -57,85 +12,345 @@ repositories {
     mavenCentral()
 }
 
+// Java configuration
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    withSourcesJar()
 }
 
-// Allure reporting configuration
+// Properties for dependency versions
+ext {
+    springBootVersion = '4.0.0-M3'
+    testngVersion = '7.11.0'
+    restAssuredVersion = '5.5.6'
+    seleniumVersion = '4.36.0'
+    cucumberVersion = '7.30.0'
+    allureVersion = '2.24.0'
+    wiremockVersion = '3.13.1'
+    mockitoVersion = '5.0.0'
+    aspectjVersion = '1.9.24'
+    extentreportsVersion = '5.1.2'
+    extentreportsCucumberAdapterVersion = '1.14.0'
+}
+
+dependencies {
+    // BOM imports for version management (similar to Maven dependencyManagement)
+    implementation platform("io.cucumber:cucumber-bom:${cucumberVersion}")
+    testImplementation platform("io.qameta.allure:allure-bom:${allureVersion}")
+
+    // Test Framework
+    testImplementation "org.testng:testng:${testngVersion}"
+
+    // Environment & Utilities
+    implementation 'io.github.cdimascio:dotenv-java:3.2.0'
+    implementation 'commons-io:commons-io:2.20.0'
+    implementation 'org.awaitility:awaitility:4.3.0'
+    implementation 'org.projectlombok:lombok:1.18.42'
+    annotationProcessor 'org.projectlombok:lombok:1.18.42'
+
+    // API Testing
+    testImplementation "io.rest-assured:rest-assured:${restAssuredVersion}"
+    testImplementation "io.rest-assured:json-schema-validator:${restAssuredVersion}"
+
+    // Web Automation
+    implementation "org.seleniumhq.selenium:selenium-java:${seleniumVersion}"
+    implementation 'org.seleniumhq.selenium:selenium-devtools-v126:4.24.0'
+    implementation 'io.github.bonigarcia:webdrivermanager:6.3.2'
+
+    // BDD Cucumber
+    implementation 'io.cucumber:cucumber-java'
+    testImplementation 'io.cucumber:cucumber-testng'
+    implementation 'io.cucumber:cucumber-spring'
+
+    // Spring Boot Test
+    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+
+    // JSON Processing
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.17.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+
+    // Excel Processing
+    testImplementation 'org.apache.poi:poi:5.2.4'
+    testImplementation 'org.apache.poi:poi-ooxml:5.2.4'
+
+    // Mocking & Stubbing
+    implementation "org.wiremock:wiremock:${wiremockVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+
+    // Allure Reporting
+    testImplementation "io.qameta.allure:allure-cucumber7-jvm"
+    testImplementation "io.qameta.allure:allure-testng"
+
+    // Extent Reports
+    implementation "com.aventstack:extentreports:${extentreportsVersion}"
+    implementation "tech.grasshopper:extentreports-cucumber7-adapter:${extentreportsCucumberAdapterVersion}"
+
+    // AspectJ for Allure
+    implementation "org.aspectj:aspectjweaver:${aspectjVersion}"
+}
+
+// Allure configuration
 allure {
-    version.set("2.24.0")
+    version.set(allureVersion)
     adapter {
+        aspectjWeaver.set(true)
         frameworks {
             testng {
                 enabled.set(true)
                 autoconfigureListeners.set(true)
             }
+            cucumberJvm {
+                enabled.set(true)
+            }
         }
     }
 }
 
-clean.doFirst {
-    delete "$projectDir/output"
+// Cucumber Reporting configuration
+cucumberReports {
+    outputDir = file('build/reports/cucumber')
+    buildId = '0'
+    reports = files('build/cucumber.json')
 }
 
+// Configure the plugin
+//cucumberReports {
+//    jsonReportDirectory = file('build/cucumber-reports') // Directory where Cucumber JSON reports are generated
+//    outputDirectory = file('build/reports/cucumber-html') // Directory for the generated HTML reports
+//    buildNumber = '1.0.0' // Optional: Build number for the report
+//    projectName = 'My Cucumber Project' // Optional: Project name for the report
+//    // Add more configuration options as needed
+//}
+
+// Clean task extension
+clean.doFirst {
+    delete "$projectDir/output"
+    delete "$projectDir/build/reports"
+    delete "$projectDir/build/cucumber.json"
+}
+
+// Main test task
 test {
     useTestNG() {
         useDefaultListeners = true
-        parallel = "test"
+        parallel = "tests"
         threadCount = 5
         suites 'testng.xml'
     }
-    systemProperty "file.encoding", "utf-8"
+
+    systemProperties = [
+            "file.encoding": "utf-8",
+            "cucumber.execution.parallel.enabled": "true",
+            "cucumber.execution.parallel.config.strategy": "fixed",
+            "cucumber.execution.parallel.config.fixed.parallelism": "6",
+            "cucumber.snippetType": "camelcase",
+            "cucumber.strict": "true",
+            "cucumber.monochrome": "true",
+            "property.file": "$projectDir/src/test/resources/config.properties"
+    ]
+
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+
+    // Load properties file
+    systemProperties(System.getProperties())
+    systemProperties['property.file'] = "$projectDir/src/test/resources/config.properties"
 }
 
-// Generate Cucumber reports task
-//cucumberReports {
-//    outputDir = file('build/cucumber.html')
-//    buildId = '0'
-//    reports = files('build/cucumber.json')
-//}
+// Integration Test setup (similar to Maven Failsafe)
+sourceSets {
+    integrationTest {
+        java.srcDir 'src/integrationTest/java'
+        resources.srcDir 'src/integrationTest/resources'
+        compileClasspath += sourceSets.main.output + sourceSets.test.output
+        runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+    }
+}
+
+configurations {
+    // Create a resolvable configuration for aspectjweaver
+//    aspectjWeaver
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+// Integration Test task
+task integrationTest(type: Test) {
+    description = 'Runs integration tests (similar to Maven Failsafe)'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    useTestNG() {
+        suites 'testng.xml'
+    }
+
+    systemProperties = [
+            "file.encoding": "utf-8",
+            "cucumber.filter.tags": System.getProperty("cucumber.filter.tags", "@api"),
+            "cucumber.execution.parallel.enabled": "true",
+            "cucumber.execution.parallel.config.strategy": "fixed",
+            "cucumber.execution.parallel.config.fixed.parallelism": System.getProperty("parallel.tests", "5"),
+            "cucumber.snippetType": "camelcase",
+            "cucumber.strict": "true",
+            "cucumber.monochrome": "true",
+            "property.file": "$projectDir/src/test/resources/config.properties"
+    ]
+
+    // AspectJ weaver for Allure in integration tests
+//    jvmArgs = [
+//            "-javaagent:${configurations.testImplementation.find { it.name.contains('aspectjweaver') }}"
+//            "-javaagent:${configurations.aspectjWeaver.singleFile}"
+//    ]
+
+    shouldRunAfter test
+}
+
+// Cucumber-specific test tasks
+task cucumberTests(type: Test) {
+    useTestNG() {
+        useDefaultListeners = true
+        suites 'testng.xml'
+    }
+
+    systemProperties = test.systemProperties + [
+            "cucumber.plugin": "json:build/cucumber.json,html:build/cucumber-html-reports",
+            "cucumber.glue": "org.spring.bdd.configs,org.spring.bdd.hooks,org.spring.bdd.stepDefs",
+//            "cucumber.features": "src/test/resources/features"
+    ]
+}
+
+task cucumberSmokeTests(type: Test) {
+    useTestNG() {
+        useDefaultListeners = true
+        suites 'testng-smoke.xml'
+    }
+    systemProperty "cucumber.filter.tags", "@smoke"
+}
+
+task cucumberRegressionTests(type: Test) {
+    useTestNG() {
+        useDefaultListeners = true
+        suites 'testng-regression.xml'
+    }
+
+    systemProperties = [
+            "cucumber.filter.tags": System.getProperty("cucumber.filter.tags", "@regression"),
+            "cucumber.execution.parallel.enabled": "true",
+            "cucumber.execution.parallel.config.strategy": "fixed",
+            "cucumber.execution.parallel.config.fixed.parallelism": "6"
+    ]
+}
+
+// Task to generate Allure report
+task allureReporting(type: Exec) {
+    description = 'Generate Allure report'
+    group = 'reporting'
+    commandLine 'allure', 'generate', 'build/allure-results', '-o', 'build/reports/allure-report'
+}
+
+// Task to serve Allure report
+task allureServing(type: Exec) {
+    description = 'Serve Allure report'
+    group = 'reporting'
+    commandLine 'allure', 'serve', 'build/allure-results'
+}
+
+// Task to generate Cucumber reports
+task genCucumberReports {
+    description = 'Generate Cucumber reports'
+    group = 'reporting'
+    // Dependencies will be set in afterEvaluate block
+}
 
 // Publishing configuration
-//publishing {
-//    publications {
-//        maven(MavenPublication) {
-//            from components.java
-//        }
-//    }
-//}
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifactId = 'spring-bdd'
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'projectRepo'
+            url = layout.buildDirectory.dir('repo')
+        }
+    }
+}
 
-// Encoding for all tasks
+// Profile-like configurations using system properties
+tasks.withType(Test).configureEach {
+    systemProperty "database.url", System.getProperty("database.url", "jdbc:mysql://prod_url:3306/devdb")
+
+    // Apply profile-specific cucumber tags
+    def profile = System.getProperty("profile", "dev")
+    switch(profile) {
+        case "dev":
+            systemProperty "cucumber.filter.tags", System.getProperty("cucumber.filter.tags", "@smoke")
+            break
+        case "stg":
+            systemProperty "cucumber.filter.tags", System.getProperty("cucumber.filter.tags", "@smoke")
+            break
+        case "prod":
+            systemProperty "cucumber.filter.tags", System.getProperty("cucumber.filter.tags", "@prod")
+            break
+    }
+}
+
+// Encoding configuration for all tasks
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.release = 21
 }
 
 tasks.withType(Javadoc).configureEach {
     options.encoding = 'UTF-8'
 }
 
-// Cucumber BDD Test Tasks
-tasks.register('cucumberTests', Test) {
-    useTestNG() {
-        useDefaultListeners = true
-        suites 'src/test/resources/testng-cucumber.xml'
+// Ensure integration tests run after unit tests
+check.dependsOn integrationTest
+
+// Ensure reports are generated after tests
+afterEvaluate {
+    tasks.matching { it.name.startsWith('cucumber') }.configureEach {
+        finalizedBy genCucumberReports
     }
 }
 
-tasks.register('cucumberSmokeTests', Test) {
-    useTestNG() {
-        useDefaultListeners = true
-        suites 'src/test/resources/testng-cucumber-smoke.xml'
+test.finalizedBy allureReporting
+integrationTest.finalizedBy allureReporting
+
+// Task dependencies - configure generateCucumberReports task if it exists
+afterEvaluate {
+    if (tasks.findByName('generateCucumberReports')) {
+        tasks.named('generateCucumberReports') {
+            dependsOn test
+        }
+        // Configure genCucumberReports to depend on generateCucumberReports
+        tasks.named('genCucumberReports') {
+            dependsOn tasks.named('generateCucumberReports')
+        }
     }
-    systemProperty "cucumber.filter.tags", "@smoke"
 }
 
-tasks.register('cucumberRegressionTests', Test) {
-    useTestNG() {
-        useDefaultListeners = true
-        suites 'src/test/resources/testng-cucumber-regression.xml'
-    }
-    systemProperty "cucumber.filter.tags", System.getProperty("cucumber.filter.tags", "")
-    systemProperty "cucumber.execution.parallel.enabled", "true"
-    systemProperty "cucumber.execution.parallel.config.strategy", "fixed"
-    systemProperty "cucumber.execution.parallel.config.fixed.parallelism", "6"
+// Display task group information
+tasks.named('test') {
+    group = 'verification'
+    description = 'Runs unit tests'
+}
+
+tasks.named('integrationTest') {
+    group = 'verification'
+    description = 'Runs integration tests'
 }

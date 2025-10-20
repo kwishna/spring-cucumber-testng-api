@@ -1,0 +1,141 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'io.qameta.allure' version '3.0.0'
+//    id "com.github.spacialcircumstances.gradle-cucumber-reporting" version "0.1.25"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.testng:testng:7.11.0'
+    implementation 'io.github.cdimascio:dotenv-java:3.2.0'
+    implementation 'commons-io:commons-io:2.20.0'
+    implementation 'org.awaitility:awaitility:4.3.0'
+    implementation 'org.projectlombok:lombok:1.18.42'
+
+    // API Testing
+    testImplementation 'io.rest-assured:rest-assured:5.5.6'
+    implementation 'io.rest-assured:json-schema-validator:5.5.6'
+
+    // Web Automation
+    implementation 'org.seleniumhq.selenium:selenium-java:4.36.0'
+    implementation 'org.seleniumhq.selenium:selenium-devtools-v126:4.24.0'
+    implementation 'io.github.bonigarcia:webdrivermanager:6.3.2'
+
+    // BDD Cucumber
+    implementation 'io.cucumber:cucumber-java:7.30.0'
+    implementation 'io.cucumber:cucumber-testng:7.30.0'
+    implementation 'io.cucumber:cucumber-spring:7.30.0'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:4.0.0-M3'
+
+    // Reporting & Utilities
+    implementation 'tools.jackson.core:jackson-core:3.0.0'
+    implementation 'tools.jackson.core:jackson-databind:3.0.0'
+    testImplementation 'org.apache.poi:poi:5.2.4'
+    testImplementation 'org.apache.poi:poi-ooxml:5.2.4'
+
+    implementation "org.wiremock:wiremock:3.13.1"
+    testImplementation "org.mockito:mockito-core:5.+"
+
+    /// Import allure-bom to ensure correct versions of all the dependencies are used
+    testImplementation platform("io.qameta.allure:allure-bom:2.24.0")
+    // Add necessary Allure dependencies to dependencies section
+    testImplementation "io.qameta.allure:allure-cucumber7-jvm"
+    testImplementation "io.qameta.allure:allure-testng"
+
+    implementation 'tech.grasshopper:extentreports-cucumber7-adapter:1.14.0'
+}
+
+group = 'org.spring.bdd'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+}
+
+// Allure reporting configuration
+allure {
+    version.set("2.24.0")
+    adapter {
+        frameworks {
+            testng {
+                enabled.set(true)
+                autoconfigureListeners.set(true)
+            }
+        }
+    }
+}
+
+clean.doFirst {
+    delete "$projectDir/output"
+}
+
+test {
+    useTestNG() {
+        useDefaultListeners = true
+        parallel = "test"
+        threadCount = 5
+        suites 'testng.xml'
+    }
+    systemProperty "file.encoding", "utf-8"
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+}
+
+// Generate Cucumber reports task
+//cucumberReports {
+//    outputDir = file('build/cucumber.html')
+//    buildId = '0'
+//    reports = files('build/cucumber.json')
+//}
+
+// Publishing configuration
+//publishing {
+//    publications {
+//        maven(MavenPublication) {
+//            from components.java
+//        }
+//    }
+//}
+
+// Encoding for all tasks
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+// Cucumber BDD Test Tasks
+tasks.register('cucumberTests', Test) {
+    useTestNG() {
+        useDefaultListeners = true
+        suites 'src/test/resources/testng-cucumber.xml'
+    }
+}
+
+tasks.register('cucumberSmokeTests', Test) {
+    useTestNG() {
+        useDefaultListeners = true
+        suites 'src/test/resources/testng-cucumber-smoke.xml'
+    }
+    systemProperty "cucumber.filter.tags", "@smoke"
+}
+
+tasks.register('cucumberRegressionTests', Test) {
+    useTestNG() {
+        useDefaultListeners = true
+        suites 'src/test/resources/testng-cucumber-regression.xml'
+    }
+    systemProperty "cucumber.filter.tags", System.getProperty("cucumber.filter.tags", "")
+    systemProperty "cucumber.execution.parallel.enabled", "true"
+    systemProperty "cucumber.execution.parallel.config.strategy", "fixed"
+    systemProperty "cucumber.execution.parallel.config.fixed.parallelism", "6"
+}
