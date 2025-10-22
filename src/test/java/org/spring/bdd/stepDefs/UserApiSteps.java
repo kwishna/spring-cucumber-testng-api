@@ -1,34 +1,41 @@
 package org.spring.bdd.stepDefs;
 
 import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.restassured.response.Response;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import io.cucumber.java.en.Then;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.spring.bdd.single_page_frameworks.api.BinService;
+import org.spring.bdd.single_page_frameworks.api.ApiClient;
 
-import static io.restassured.RestAssured.given;
 import static org.testng.Assert.assertEquals;
 
+@Component
+@Scope('cucumber-glue')
 public class UserApiSteps extends BaseApiSteps {
 
     private static final Logger log = LogManager.getLogger(UserApiSteps.class);
+    
+    @Autowired
+    private BinService binService;
+
+    private String currentBaseUrl;
 
     @Given("the API base URL is {string}")
-    public void setBaseURL(String url) {
-        log.info("--- Setting base URL to: {} ---", url);
-        this.baseUrl = url;
+    public void iSetBaseURL(String baseUrl) {
+        log.info("--- Setting base URL to: {} ---", baseUrl);
+        this.currentBaseUrl = baseUrl;
     }
 
     @When("I send a GET request to {string}")
-    public void sendGetRequest(String endpoint) {
+    public void iSendGetRequest(String endpoint) {
         log.info("--- Sending GET request to: {}{} ---", baseUrl, endpoint);
-        Response res = given().relaxedHTTPSValidation().baseUri(baseUrl).get(endpoint);
+        response = binService.get(currentBaseUrl, endpoint);
     }
 
     @Then("the response status code should be {int}")
-    public void verifyStatusCode(int expectedStatusCode) {
-        log.info("--- Verifying status code. Expected: {}, Actual: {} ---", expectedStatusCode, response.getStatusCode());
-        assertEquals(response.getStatusCode(), expectedStatusCode);
+    public void iVerifyStatusCode(Integer expectedStatus) {
+        log.info("--- Verifying status code. Expected: {}, Actual: {} ---", expectedStatus, response.getStatusCode());
+        assertEquals(response.getStatusCode(), expectedStatus.intValue(), "Unexpected status code");
     }
 }

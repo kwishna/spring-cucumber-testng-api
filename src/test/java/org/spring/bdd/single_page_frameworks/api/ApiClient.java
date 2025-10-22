@@ -8,6 +8,7 @@ import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
+import io.restassured.config.HttpClientConfig;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -20,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.annotation.Scope;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +33,7 @@ import java.util.concurrent.TimeUnit;
  * Production-grade REST Assured API Testing Framework * * Features: * - Fluent API for building requests * - Automatic serialization/deserialization * - Request/Response logging * - Authentication support (Basic, Bearer, OAuth) * - Header management * - Query and path parameter handling * - File upload/download * - Response validation and extraction * - Retry mechanism for flaky tests * - Custom configurations * * Usage: * <pre> * ApiResponse response = apiClient.newRequest() * .baseUri("https://api.example.com") * .path("/users/{id}") * .pathParam("id", "123") * .header("Authorization", "Bearer token") * .queryParam("include", "details") * .get(); * * User user = response.as(User.class); * </pre>
  */
 @Component
+@Scope('cucumber-glue') // Needed for multi-threaded execution
 public class ApiClient {
     private static final Logger log = LogManager.getLogger(ApiClient.class);
     @Value("${api.base.url:}")
@@ -336,8 +339,14 @@ public class ApiClient {
             }
 
             // Timeout
-            builder.setConfig(RestAssuredConfig.config().httpClient(
-                    io.restassured.config.HttpClientConfig.httpClientConfig().setParam("http.connection.timeout", timeout * 1000).setParam("http.socket.timeout", timeout * 1000)));
+            // builder.setConfig(RestAssuredConfig.config().httpClient(
+            //         io.restassured.config.HttpClientConfig.httpClientConfig().setParam("http.connection.timeout", timeout * 1000).setParam("http.socket.timeout", timeout * 1000)));
+            
+            HttpClientConfig httpConfig = HttpClientConfig.httpClientConfig()
+                            .setParam("http.connection.timeout", timeout * 1000)
+                            .setParam("http.socket.timeout", timeout * 1000)
+            RestAssuredConfig config = client.config().httpClient(httpConfig);
+            builder.setConfig(config);
 
             // Logging
             if (enableLogging && client.logRequests) {
